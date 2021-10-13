@@ -1,13 +1,26 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+
+/* TODO :: style */
+
+.shit {
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.snake {
+    background-color: green;
+}
+
+.food {
+    background-color: red;
+}
+
+.obstacle {
+    background-color: gray;
+}
+
+.cell, .snake, .food, .obstacle {
+    border: 1px solid gray;
+    padding:  1rem;
+}
+
+.cell {
 }
