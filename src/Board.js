@@ -2,7 +2,7 @@ import React from 'react';
 import {Snake} from "./Snake";
 
 export class Board extends React.Component {
-    GAME_SPEED =200
+    GAME_SPEED = 200
 
     constructor(props) {
         super(props);
@@ -16,20 +16,15 @@ export class Board extends React.Component {
     }
 
     update_state(state) {
-        let game_status = state.snake.makeMove(state.lastPressed, this.BOARD_SIZE, state.food, state.obstacles)
-        let food = undefined
-
-        if (game_status === "ATE") {
-            food = this.generateFood(state.obstacles)
-        }
-
-        let test = {...state, game_status: game_status}
-        return food ? {...test, food} : test
+        let gameStatus = state.snake.makeMove(state.lastPressed, this.BOARD_SIZE, state.food, state.obstacles)
+        let lastState = {...state, gameStatus: gameStatus}
+        return (gameStatus === "ATE" ? {...state, food: this.generateFood(state.obstacles)} : lastState)
     }
 
-    generateFood(obstacles) {
+    generateFood(obstacles, segments) {
         let f = this.generateRandomCell()
-        while (obstacles.find(s => s.x === f.x && s.y === f.y)) {
+        while (obstacles.find(s => s.x === f.x && s.y === f.y)
+            && segments.find(s => s.x === f.x && s.y === f.y)) {
             f = this.generateRandomCell()
         }
         return f
@@ -75,7 +70,7 @@ export class Board extends React.Component {
     }
 
     onKey(e) {
-        if (this.state && this.state.game_status && this.state.game_status !== "OK") {
+        if (this.state && this.state.gameStatus && this.state.gameStatus !== "OK") {
             return
         }
 
@@ -102,6 +97,7 @@ export class Board extends React.Component {
 
     renderField() {
         const row = [];
+
         for (let i = 0; i < this.BOARD_SIZE; i++) {
             for (let j = 0; j < this.BOARD_SIZE; j++) {
                 row.push(this.renderSquare(i, j));
@@ -136,14 +132,15 @@ export class Board extends React.Component {
 
     reset_game() {
         this.BOARD_SIZE = 15
-        let game_status = "OK"
+        let gameStatus = "OK"
         let obstacles = this.generateObstacles()
+        let snake = new Snake()
 
         return {
-            snake: new Snake(),
+            snake: snake,
             obstacles: obstacles,
-            game_status: game_status,
-            food: this.generateFood(obstacles),
+            gameStatus: gameStatus,
+            food: this.generateFood(obstacles, snake.segments),
             lastPressed: "bottom"
         }
     }
@@ -163,13 +160,13 @@ export class Board extends React.Component {
             >
 
                 {(() => {
-                    if (this.state.game_status === "SELFKILLED" || this.state.game_status === "OBSTACLE" || this.state.game_status === "GAME_OVER") {
+                    if (this.state.gameStatus === "SELFKILLED" || this.state.gameStatus === "OBSTACLE" || this.state.gameStatus === "GAME_OVER") {
                         return (<div>
                             <div>
                                 Game over
                             </div>
                             <div>
-                                {this.state.game_status}
+                                {this.state.gameStatus}
                             </div>
 
                             <button onClick={() => this.setState(_ => this.reset_game())}>
