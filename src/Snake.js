@@ -6,7 +6,7 @@ export class Snake {
         let x = current_head.x
         let y = current_head.y
         switch (direction) {
-            // TODO :: поправить логику. где x, где y - все перепутано
+            // TODO
             case "left":
                 y = (y - 1 + BOARD_SIZE) % BOARD_SIZE
                 break
