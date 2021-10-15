@@ -3,6 +3,7 @@ import {Snake} from "./Snake";
 
 export class Board extends React.Component {
     GAME_SPEED = 200
+    lastPressed = "bottom"
 
     constructor(props) {
         super(props);
@@ -16,15 +17,22 @@ export class Board extends React.Component {
     }
 
     update_state(state) {
-        let gameStatus = state.snake.makeMove(state.lastPressed, this.BOARD_SIZE, state.food, state.obstacles)
+        let tail = state.snake.segments[0]
+        let gameStatus = state.snake.makeMove(this.lastPressed, this.BOARD_SIZE, state.food, state.obstacles)
         let lastState = {...state, gameStatus: gameStatus}
-        return (gameStatus === "ATE" ? {...state, food: this.generateFood(state.obstacles)} : lastState)
+        let food = undefined
+        if (gameStatus === "ATE") {
+            food = this.generateFood(state.obstacles, state.snake.segments)
+        }
+        let field = this.renderField(lastState, tail, food)
+        lastState = (food ? {...lastState, food} : lastState)
+        return {...lastState, field}
     }
 
     generateFood(obstacles, segments) {
         let f = this.generateRandomCell()
         while (obstacles.find(s => s.x === f.x && s.y === f.y)
-            && segments.find(s => s.x === f.x && s.y === f.y)) {
+        || segments.find(s => s.x === f.x && s.y === f.y)) {
             f = this.generateRandomCell()
         }
         return f
@@ -44,72 +52,53 @@ export class Board extends React.Component {
         }
     }
 
-    renderSquare(x, y) {
-        if (
-            this.state.snake.segments.find(s => s.x === x && s.y === y)
-        ) {
-            return (
-                <div key={x + "_" + y} className="snake">
-                </div>
-            )
-        } else if (x === this.state.food.x && y === this.state.food.y) {
-            return (
-                <div key={x + "_" + y} className="food">
-                </div>
-            )
-        } else if (this.state.obstacles.find(s => s.x === x && s.y === y)) {
-            return (
-                <div key={x + "_" + y} className="obstacle">
-                </div>
-            )
-        } else
-            return (
-                <div key={x + "_" + y} className="cell">
-                </div>
-            )
-    }
-
     onKey(e) {
-        if (this.state && this.state.gameStatus && this.state.gameStatus !== "OK") {
+        if (this.state.gameStatus !== "OK") {
             return
         }
-
-        let lastPressed = "dsads"
         switch (e.key) {
             case "ArrowUp":
-                lastPressed = "top"
+                this.lastPressed = "top"
                 break
             case "ArrowDown":
-                lastPressed = "bottom"
+                this.lastPressed = "bottom"
                 break
             case "ArrowLeft":
-                lastPressed = "left"
+                this.lastPressed = "left"
                 break
             case "ArrowRight":
-                lastPressed = "right"
+                this.lastPressed = "right"
                 break
             default:
                 break
         }
-
-        this.setState(state => ({...state, lastPressed: lastPressed}))
     }
 
-    renderField() {
-        const row = [];
+    snakeSquare(k1, k2) {
+        return <div key={k1 + "_" + k2} className="snake"/>
+    }
+    foodSquare(k1, k2) {
+        return <div key={k1 + "_" + k2} className="food">🐭</div>
+    }
+    cellSquare(k1, k2) {
+        return <div key={k1 + "_" + k2} className="cell"/>
+    }
 
-        for (let i = 0; i < this.BOARD_SIZE; i++) {
-            for (let j = 0; j < this.BOARD_SIZE; j++) {
-                row.push(this.renderSquare(i, j));
-            }
+    renderField(state, tail, food) {
+        let segments = state.snake.segments
+        let newField = state.field
+        let head = segments[segments.length - 1]
+        newField[head.x][head.y] = this.snakeSquare(head.x, head.y)
+        if (state.gameStatus === "ATE") {
+            newField[food.x][food.y] = this.foodSquare(food.x, food.y)
+        } else {
+            newField[tail.x][tail.y] = this.cellSquare(tail.x, tail.y)
         }
-        return row;
+        return newField
     }
 
-    // Returns a random number between min (inclusive) and max (exclusive)
     getRandomArbitrary(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min
-        // TODO :: сделать так, чтобы яблоко не появлялось в змее или в препятствии
     }
 
     generateRandomCell() {
@@ -118,7 +107,6 @@ export class Board extends React.Component {
 
     generateObstacles() {
         let tmp = []
-        // TODO ::
         for (let i = 0; i < 10; i++) {
             let cell = this.generateRandomCell()
             while
@@ -130,43 +118,57 @@ export class Board extends React.Component {
         return tmp
     }
 
+    createField(snake, obstacles, food) {
+        let field = []
+        for (let i = 0; i < this.BOARD_SIZE; i++) {
+            let row = []
+            for (let j = 0; j < this.BOARD_SIZE; j++) {
+                row.push(this.cellSquare(i, j))
+            }
+            field.push(row)
+        }
+        for (let seg of snake.segments) {
+            field[seg.x][seg.y] = this.snakeSquare(seg.x, seg.y)
+        }
+        for (let obs of obstacles) {
+            field[obs.x][obs.y] = (<div key={obs.x + "_" + obs.y} className="obstacle">😈</div>)
+        }
+        field[food.x][food.y] = this.foodSquare(food.x, food.y)
+        return field
+    }
+
     reset_game() {
-        this.BOARD_SIZE = 15
+        this.BOARD_SIZE = 10
         let gameStatus = "OK"
         let obstacles = this.generateObstacles()
         let snake = new Snake()
+        let food = this.generateFood(obstacles, snake.segments)
+        let field = this.createField(snake, obstacles, food)
+        this.lastPressed = "bottom"
 
         return {
             snake: snake,
             obstacles: obstacles,
             gameStatus: gameStatus,
-            food: this.generateFood(obstacles, snake.segments),
-            lastPressed: "bottom"
+            food: food,
+            field: field
         }
     }
 
+    getField() {
+        return this.state.field.flatMap(x => x)
+    }
 
     render() {
         return (
-            <div className="field"
-                 style={{
-                     height: "100%",
-                     width: "100%",
-                     display: "grid",
-                     "grid-template-columns": `repeat(${this.BOARD_SIZE}, 1fr)`,
-                     "grid-template-rows": `repeat(${this.BOARD_SIZE}, 1fr)`
-                 }}
-                 tabIndex="-1" onKeyDown={event => this.onKey(event)}
-            >
-
-                {(() => {
-                    if (this.state.gameStatus === "SELFKILLED" || this.state.gameStatus === "OBSTACLE" || this.state.gameStatus === "GAME_OVER") {
-                        return (<div>
-                            <div>
+                (() => {
+                    if (this.state.gameStatus === "SELF-MURDER" || this.state.gameStatus === "OBSTACLE" || this.state.gameStatus === "CRASHED") {
+                        return (<div className="gameOver">
+                            <div className="gameOver_head">
                                 Game over
                             </div>
                             <div>
-                                {this.state.gameStatus}
+                                Reason: {this.state.gameStatus}
                             </div>
 
                             <button onClick={() => this.setState(_ => this.reset_game())}>
@@ -174,9 +176,18 @@ export class Board extends React.Component {
                             </button>
                         </div>)
                     }
-                    return this.renderField()
-                })()}
-            </div>
+                    return (<div className="field"
+                         style={{
+                             height: `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
+                             "max-width": `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
+                             "grid-template-columns": `repeat(${this.BOARD_SIZE}, 1fr)`,
+                             "grid-template-rows": `repeat(${this.BOARD_SIZE}, 1fr)`
+                         }}
+                         tabIndex="0" onKeyDown={event => this.onKey(event)}
+                    >
+                        {this.getField()}
+                        </div>)
+                })()
         );
     }
 }

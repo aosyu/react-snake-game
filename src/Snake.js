@@ -6,7 +6,6 @@ export class Snake {
         let x = current_head.x
         let y = current_head.y
         switch (direction) {
-            // TODO
             case "left":
                 y = (y - 1 + BOARD_SIZE) % BOARD_SIZE
                 break
@@ -15,21 +14,21 @@ export class Snake {
                 break
             case "top":
                 if (x === 0) {
-                    return "GAME_OVER"
+                    return "CRASHED"
                 }
                 x = (x - 1 + BOARD_SIZE) % BOARD_SIZE
                 break
             default:
             case "down":
                 if (x === BOARD_SIZE - 1) {
-                    return "GAME_OVER"
+                    return "CRASHED"
                 }
                 x = (x + 1) % BOARD_SIZE
                 break
         }
 
         if (this.segments.find(s => s.x === x && s.y === y)) {
-            return "SELFKILLED";
+            return "SELF-MURDER";
         }
 
         if (obstacles.find(s => s.x === x && s.y === y)) {

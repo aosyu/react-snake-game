@@ -1,8 +1,30 @@
-
-
-/* TODO :: style */
-
 .field {
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+    display: grid;
+    border-top: 5px solid darkslategray;
+    border-bottom: 5px solid darkslategray;
+}
+
+.header {
+    font-weight: bold;
+}
+
+.gameOver_head {
+    font-weight: bold;
+    font-size: 2rem;
+    color: darkslategray;
+}
+
+.gameOver {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+* {
+    font-family: "Bookman Old Style", cursive;
 }
 
 .snake {
@@ -19,8 +41,9 @@
 
 .cell, .snake, .food, .obstacle {
     border: 1px solid gray;
-    padding:  1rem;
-}
-
-.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
 }
