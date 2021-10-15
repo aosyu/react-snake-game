@@ -11,5 +11,7 @@ You can move the snake with the arrow keys.
 * npm install
 * npm start
 
+![img.png](img.png)
+
 
 

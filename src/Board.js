@@ -9,7 +9,7 @@ export class Board extends React.Component {
         super(props);
 
         this.onKey = this.onKey.bind(this)
-        this.state = this.reset_game()
+        this.state = this.resetGame()
     }
 
     update() {
@@ -41,7 +41,7 @@ export class Board extends React.Component {
     componentDidMount() {
         document.addEventListener('keydown', this.onKey)
 
-        this.setState(_ => this.reset_game(), () => this.update())
+        this.setState(_ => this.resetGame(), () => this.update())
     }
 
     componentWillUnmount() {
@@ -77,9 +77,11 @@ export class Board extends React.Component {
     snakeSquare(k1, k2) {
         return <div key={k1 + "_" + k2} className="snake"/>
     }
+
     foodSquare(k1, k2) {
         return <div key={k1 + "_" + k2} className="food">🐭</div>
     }
+
     cellSquare(k1, k2) {
         return <div key={k1 + "_" + k2} className="cell"/>
     }
@@ -107,10 +109,9 @@ export class Board extends React.Component {
 
     generateObstacles() {
         let tmp = []
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < this.BOARD_SIZE; i++) {
             let cell = this.generateRandomCell()
-            while
-                (cell.y === 0 && cell.x < 5) {
+            while (cell.y === 0 && cell.x < 5) {
                 cell = this.generateRandomCell()
             }
             tmp.push(cell)
@@ -137,7 +138,7 @@ export class Board extends React.Component {
         return field
     }
 
-    reset_game() {
+    resetGame() {
         this.BOARD_SIZE = 10
         let gameStatus = "OK"
         let obstacles = this.generateObstacles()
@@ -161,33 +162,42 @@ export class Board extends React.Component {
 
     render() {
         return (
-                (() => {
-                    if (this.state.gameStatus === "SELF-MURDER" || this.state.gameStatus === "OBSTACLE" || this.state.gameStatus === "CRASHED") {
-                        return (<div className="gameOver">
-                            <div className="gameOver_head">
-                                Game over
-                            </div>
-                            <div>
-                                Reason: {this.state.gameStatus}
-                            </div>
+            (() => {
+                if (this.state.gameStatus !== "OK" && this.state.gameStatus !== "ATE") {
+                    return (<div className="gameOver">
+                        <div className="gameOver_head">
+                            Game over
+                        </div>
+                        <div>
+                            Reason: {this.state.gameStatus}
+                        </div>
 
-                            <button onClick={() => this.setState(_ => this.reset_game())}>
-                                Start again
-                            </button>
-                        </div>)
-                    }
-                    return (<div className="field"
-                         style={{
-                             height: `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
-                             "max-width": `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
-                             "grid-template-columns": `repeat(${this.BOARD_SIZE}, 1fr)`,
-                             "grid-template-rows": `repeat(${this.BOARD_SIZE}, 1fr)`
-                         }}
-                         tabIndex="0" onKeyDown={event => this.onKey(event)}
-                    >
-                        {this.getField()}
-                        </div>)
-                })()
+                        <button onClick={() => this.setState(_ => this.resetGame())}>
+                            Start again
+                        </button>
+                    </div>)
+                }
+                return (
+                    <div>
+                        <div className="gameName">
+                            Snake Game
+                        </div>
+                        <div className="field"
+                             style={{
+                                 height: `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
+                                 "max-width": `calc(${this.BOARD_SIZE}*2rem + ${2 * this.BOARD_SIZE}px)`,
+                                 "grid-template-columns": `repeat(${this.BOARD_SIZE}, 1fr)`,
+                                 "grid-template-rows": `repeat(${this.BOARD_SIZE}, 1fr)`
+                             }}
+                             tabIndex="0" onKeyDown={event => this.onKey(event)}
+                        >
+                            {this.getField()}
+                        </div>
+                        <div className="rules">
+                            Use the arrows to control the snake
+                        </div>
+                    </div>)
+            })()
         );
     }
 }
